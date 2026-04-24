@@ -24,10 +24,18 @@ def run_pipeline():
         with open(file_path, 'r') as f:
             raw_data = json.load(f)
         
-        # TODO: Bước 1: Gọi hàm xử lý PDF (process_pdf_data)
+        # Bước 1: Gọi hàm xử lý PDF (process_pdf_data) từ Role 2
+        processed_data = process_pdf_data(raw_data)
         
-        # TODO: Bước 2: Kiểm tra chất lượng (run_semantic_checks). 
-        # Nếu đạt (True) thì thêm vào list final_kb
+        # Bước 2: Kiểm tra chất lượng (run_semantic_checks) từ Role 3
+        # Nếu đạt (True) thì sử dụng Schema (Role 1) để validate và thêm vào list final_kb
+        if run_semantic_checks(processed_data):
+            try:
+                # Dùng UnifiedDocument để đảm bảo dữ liệu đúng chuẩn trước khi lưu
+                doc = UnifiedDocument(**processed_data)
+                final_kb.append(doc.model_dump())
+            except Exception as e:
+                print(f"Schema validation failed for {file_path}: {e}")
 
     # Xử lý Group B (Videos)
     video_files = glob.glob(os.path.join(RAW_DATA_DIR, "group_b_videos", "*.json"))
@@ -35,12 +43,22 @@ def run_pipeline():
         with open(file_path, 'r') as f:
             raw_data = json.load(f)
         
-        # TODO: Làm tương tự như phần PDF (gọi hàm xử lý Video và kiểm tra chất lượng)
+        # Gọi hàm xử lý Video từ Role 2
+        processed_data = process_video_data(raw_data)
+        
+        # Kiểm tra chất lượng từ Role 3
+        if run_semantic_checks(processed_data):
+            try:
+                # Dùng UnifiedDocument để đảm bảo dữ liệu đúng chuẩn
+                doc = UnifiedDocument(**processed_data)
+                final_kb.append(doc.model_dump())
+            except Exception as e:
+                print(f"Schema validation failed for {file_path}: {e}")
 
     # Lưu kết quả
-    with open(OUTPUT_FILE, 'w') as f:
-        json.dump(final_kb, f, indent=4)
-        print(f"Pipeline finished! Saved {len(final_kb)} records.")
+    with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
+        json.dump(final_kb, f, indent=4, ensure_ascii=False)
+        print(f"Pipeline finished! Saved {len(final_kb)} records to {OUTPUT_FILE}")
 
 if __name__ == "__main__":
     run_pipeline()
