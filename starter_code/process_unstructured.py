@@ -23,8 +23,8 @@ def process_pdf_data(raw_json: dict) -> dict:
     }
 
 def process_video_data(raw_json: dict) -> dict:
-    # TODO: Map dữ liệu thô từ Video sang định dạng chuẩn (giống PDF)
-    # Lưu ý các key của Video: video_id, creator_name, transcript, category, published_timestamp
+    # Map dữ liệu thô từ Video sang định dạng chuẩn
+    # Các key của Video: video_id, creator_name, transcript, category, published_timestamp
     return {
         "document_id": raw_json.get("video_id", ""),
         "source_type": "Video",
